@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SooqTrend - Technical Analysis</title>
+    <link rel="stylesheet" href="index.css">
+    <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <div class="toolbar">
+            <div class="brand">مؤشر سوق ترند الموزون <span class="beta">SooqTrend</span></div>
+            
+            <div class="tf-selector">
+                <button class="tf-btn active" data-tf="D">يومي (D)</button>
+                <button class="tf-btn" data-tf="W">أسبوعي (W)</button>
+            </div>
+        </div>
+
+        <div class="chart-wrapper">
+            <div id="legend" class="legend">
+                <div class="symbol-name">Equal Weighted Index</div>
+                <div class="ohlc-values">
+                    <span class="label">O</span><span id="open-val" class="val">--</span>
+                    <span class="label">H</span><span id="high-val" class="val">--</span>
+                    <span class="label">L</span><span id="low-val" class="val">--</span>
+                    <span class="label">C</span><span id="close-val" class="val">--</span>
+                    <span class="label">Vol</span><span id="vol-val" class="val">--</span>
+                </div>
+            </div>
+
+            <div id="chart"></div>
+        </div>
+    </div>
+
+    <script type="module" src="./index.js"></script>
+</body>
+</html>
