@@ -1,72 +1,49 @@
 import { dailyData } from './daily_chart.js';
 import { weeklyData } from './weekly_chart.js';
 
-// التحقق من المكتبة
-if (!window.LightweightCharts) {
-    console.error('LightweightCharts library not loaded!');
-}
-
+// عنصر الشارت
 const chartContainer = document.getElementById('chart');
 
-// --- 1. إعدادات الشارت المتطورة ---
-const chartOptions = {
+// 1. إنشاء الشارت
+const chart = window.LightweightCharts.createChart(chartContainer, {
     layout: {
         background: { type: 'solid', color: '#ffffff' },
         textColor: '#131722',
     },
     grid: {
-        vertLines: { color: '#F0F3FA', style: 1 }, // خطوط خفيفة جداً
-        horzLines: { color: '#F0F3FA', style: 1 },
+        vertLines: { visible: false }, // إخفاء الخطوط العمودية لتقليل التشويش
+        horzLines: { color: '#f0f3fa' },
     },
-    // العلامة المائية (Watermark)
-    watermark: {
-        visible: true,
-        fontSize: 75,
-        horzAlign: 'center',
-        vertAlign: 'center',
-        color: 'rgba(41, 98, 255, 0.08)', // لون أزرق شفاف جداً وأنيق
-        text: 'SooqTrend',
-        fontFamily: 'Impact, Arial', // خط سميك للعلامة المائية
-    },
+    // إخفاء مقياس السعر والوقت قليلاً لتوفير مساحة في الجوال
     rightPriceScale: {
-        borderColor: '#E0E3EB',
+        borderColor: '#e0e3eb',
         scaleMargins: {
             top: 0.1,
-            bottom: 0.2, // ترك مساحة للفوليوم
+            bottom: 0.2,
         },
     },
     timeScale: {
-        borderColor: '#E0E3EB',
+        borderColor: '#e0e3eb',
         timeVisible: true,
-        rightOffset: 5, // مسافة فارغة على اليمين
     },
     crosshair: {
-        mode: window.LightweightCharts.CrosshairMode.Normal, // وضع المغناطيس
         vertLine: {
-            width: 1,
-            color: '#758696',
-            style: 3,
-            labelBackgroundColor: '#758696',
-        },
-        horzLine: {
-            width: 1,
-            color: '#758696',
-            style: 3,
-            labelBackgroundColor: '#758696',
+            labelVisible: false, // إخفاء التاريخ عند التحرك بالإصبع لرؤية أوضح
         },
     },
-};
+    // تفعيل التمرير السلس
+    kineticScroll: {
+        touch: true,
+        mouse: true,
+    },
+});
 
-const chart = window.LightweightCharts.createChart(chartContainer, chartOptions);
-
-// --- 2. السلاسل (Series) ---
-
-// استخدام البارات (Bar Chart) كما طلبت
+// 2. إضافة السلاسل (Series)
+// البارات (Bar Chart)
 const mainSeries = chart.addBarSeries({
-    upColor: '#089981',      // أخضر تريدنج فيو الرسمي
-    downColor: '#F23645',    // أحمر تريدنج فيو الرسمي
-    thinBars: false,         // بارات واضحة
-    openVisible: true,       // إظهار الافتتاح
+    upColor: '#089981',
+    downColor: '#F23645',
+    thinBars: false,
 });
 
 // الفوليوم
@@ -79,9 +56,16 @@ volumeSeries.priceScale().applyOptions({
     scaleMargins: { top: 0.8, bottom: 0 },
 });
 
-// --- 3. وظائف التحديث ---
+// 3. منطق تغيير الحجم (Resize Logic) - أهم جزء للجوال
+// نستخدم ResizeObserver لمراقبة تغير حجم الحاوية بدقة
+const resizeObserver = new ResizeObserver(entries => {
+    if (entries.length === 0 || entries[0].target !== chartContainer) { return; }
+    const newRect = entries[0].contentRect;
+    chart.applyOptions({ height: newRect.height, width: newRect.width });
+});
+resizeObserver.observe(chartContainer);
 
-// مرجع لعناصر HTML
+// 4. وظائف تحديث البيانات والأسطورة (Legend)
 const domElements = {
     open: document.getElementById('open-val'),
     high: document.getElementById('high-val'),
@@ -92,24 +76,17 @@ const domElements = {
 
 function updateLegend(param) {
     if (!param) return;
-    
-    // تنسيق الأرقام
-    const formatPrice = (p) => p.toFixed(2);
-    const formatVol = (v) => {
-        if (v >= 1000000) return (v / 1000000).toFixed(2) + 'M';
-        if (v >= 1000) return (v / 1000).toFixed(2) + 'K';
-        return v;
-    };
+    const format = (n) => n.toFixed(2);
+    const formatVol = (v) => v >= 1000000 ? (v/1000000).toFixed(2)+'M' : (v >= 1000 ? (v/1000).toFixed(0)+'K' : v);
 
-    domElements.open.innerText = formatPrice(param.open);
-    domElements.high.innerText = formatPrice(param.high);
-    domElements.low.innerText = formatPrice(param.low);
-    domElements.close.innerText = formatPrice(param.close);
+    domElements.open.innerText = format(param.open);
+    domElements.high.innerText = format(param.high);
+    domElements.low.innerText = format(param.low);
+    domElements.close.innerText = format(param.close);
     domElements.vol.innerText = formatVol(param.volume || param.value);
     
-    // تلوين سعر الإغلاق حسب الحركة
-    const color = param.close >= param.open ? '#089981' : '#F23645';
-    domElements.close.style.color = color;
+    // تلوين الإغلاق
+    domElements.close.style.color = param.close >= param.open ? '#089981' : '#F23645';
 }
 
 function renderChart(data) {
@@ -117,11 +94,10 @@ function renderChart(data) {
 
     mainSeries.setData(data);
 
-    // تلوين الفوليوم
     const volData = data.map(d => ({
         time: d.time,
         value: d.volume,
-        color: d.close >= d.open ? 'rgba(8, 153, 129, 0.4)' : 'rgba(242, 54, 69, 0.4)',
+        color: d.close >= d.open ? 'rgba(8, 153, 129, 0.3)' : 'rgba(242, 54, 69, 0.3)',
     }));
     volumeSeries.setData(volData);
 
@@ -132,7 +108,7 @@ function renderChart(data) {
     chart.timeScale().fitContent();
 }
 
-// التفاعل مع حركة الماوس
+// التفاعل باللمس/الماوس
 chart.subscribeCrosshairMove((param) => {
     if (param.time) {
         const p = param.seriesData.get(mainSeries);
@@ -141,33 +117,16 @@ chart.subscribeCrosshairMove((param) => {
     }
 });
 
-// --- 4. تفعيل الأزرار (Logic for Buttons) ---
-
-// البدء باليومي
-renderChart(dailyData);
-
-// البحث عن كل الأزرار وربطها
+// 5. تفعيل الأزرار
 const buttons = document.querySelectorAll('.tf-btn');
-
 buttons.forEach(btn => {
     btn.addEventListener('click', function() {
-        // 1. إزالة كلاس active من الجميع
         buttons.forEach(b => b.classList.remove('active'));
-        
-        // 2. إضافته للزر المضغوط
         this.classList.add('active');
-        
-        // 3. تحميل البيانات المناسبة
         const tf = this.getAttribute('data-tf');
-        if (tf === 'D') {
-            renderChart(dailyData);
-        } else if (tf === 'W') {
-            renderChart(weeklyData);
-        }
+        renderChart(tf === 'D' ? dailyData : weeklyData);
     });
 });
 
-// تجاوب الشاشة
-window.addEventListener('resize', () => {
-    chart.applyOptions({ width: chartContainer.clientWidth });
-});
+// البدء باليومي
+renderChart(dailyData);
