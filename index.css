@@ -1,125 +1,129 @@
 :root {
-    --bg-color: #f8f9fd;
-    --card-bg: #ffffff;
+    --bg-color: #ffffff;
     --primary: #2962ff;
     --text-main: #131722;
-    --text-secondary: #787b86;
     --border: #e0e3eb;
-    --hover: #f0f3fa;
+    --btn-bg: #f0f3fa;
 }
 
-body {
-    font-family: 'IBM Plex Sans Arabic', sans-serif;
-    background-color: var(--bg-color);
+/* 1. ضبط الصفحة لتملأ الشاشة وتمنع السكرول */
+html, body {
+    height: 100%;
     margin: 0;
-    padding: 20px;
-    color: var(--text-main);
+    padding: 0;
+    overflow: hidden; /* يمنع نزول الصفحة لأسفل */
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-color);
 }
 
+/* 2. الحاوية الرئيسية بنظام Flex */
 .app-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    background: var(--card-bg);
-    border-radius: 12px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.05);
-    overflow: hidden;
-    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column; /* ترتيب العناصر عمودياً */
+    height: 100vh; /* ارتفاع 100% من الشاشة */
 }
 
-/* شريط الأدوات */
+/* 3. شريط الأدوات */
 .toolbar {
+    flex: 0 0 auto; /* ارتفاع ثابت حسب المحتوى */
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 20px;
+    padding: 12px 16px;
     border-bottom: 1px solid var(--border);
+    background: #fff;
+    z-index: 20; /* ليبقى فوق الشارت */
 }
 
 .brand {
-    font-size: 20px;
+    font-size: 16px;
     font-weight: 700;
-    color: #131722;
+    color: var(--text-main);
 }
 
 .brand .beta {
     font-size: 10px;
     background: var(--primary);
     color: white;
-    padding: 2px 6px;
-    border-radius: 4px;
-    vertical-align: middle;
+    padding: 2px 5px;
+    border-radius: 3px;
     margin-right: 5px;
+    vertical-align: middle;
 }
 
-/* أزرار الفاصل الزمني */
+/* أزرار اللمس */
 .tf-selector {
     display: flex;
-    gap: 5px;
-    background: var(--hover);
-    padding: 4px;
-    border-radius: 6px;
+    gap: 8px;
 }
 
 .tf-btn {
     border: none;
-    background: transparent;
-    padding: 6px 16px;
-    font-family: inherit;
+    background: var(--btn-bg);
+    padding: 8px 16px; /* مساحة لمس مريحة للإصبع */
     font-size: 14px;
     font-weight: 600;
-    color: var(--text-secondary);
+    color: #555;
+    border-radius: 6px;
     cursor: pointer;
-    border-radius: 4px;
-    transition: all 0.2s;
-}
-
-.tf-btn:hover {
-    color: var(--text-main);
-    background: rgba(255,255,255,0.5);
+    transition: background 0.2s;
+    -webkit-tap-highlight-color: transparent; /* إزالة الوميض عند اللمس في الموبايل */
 }
 
 .tf-btn.active {
-    background: var(--card-bg);
-    color: var(--primary);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background: var(--primary);
+    color: white;
 }
 
-/* منطقة الرسم */
+/* 4. منطقة الرسم البياني */
 .chart-wrapper {
+    flex: 1 1 auto; /* يأخذ كل المساحة المتبقية */
     position: relative;
-    height: 650px; /* ارتفاع كبير ومناسب */
+    width: 100%;
+    overflow: hidden;
 }
 
 #chart {
+    position: absolute; /* ليملأ الحاوية الأب تماماً */
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
 }
 
-/* الأسطورة (Legend) */
+/* 5. الأسطورة (Legend) */
 .legend {
     position: absolute;
-    top: 15px;
-    left: 15px;
-    z-index: 5;
+    top: 10px;
+    left: 10px;
+    z-index: 10;
     background: rgba(255, 255, 255, 0.9);
-    padding: 8px 12px;
-    border-radius: 6px;
+    padding: 6px 10px;
+    border-radius: 4px;
     border: 1px solid var(--border);
-    pointer-events: none;
+    pointer-events: none; /* يسمح بالضغط من خلالها */
+    font-size: 12px;
 }
 
 .symbol-name {
     font-weight: 700;
-    font-size: 16px;
     margin-bottom: 4px;
+    font-size: 13px;
+    display: block; /* اسم الرمز في سطر مستقل */
 }
 
 .ohlc-values {
-    font-size: 13px;
-    font-family: 'Roboto Mono', monospace; /* خط للأرقام */
     display: flex;
-    gap: 12px;
+    gap: 8px;
+    white-space: nowrap; /* يمنع تكسر الأرقام */
 }
 
-.label { color: var(--text-secondary); margin-left: 3px;}
-.val { font-weight: 600; }
+.val { font-weight: 600; font-family: 'Roboto Mono', monospace; }
+.label { color: #888; margin-left: 2px; }
+
+/* تحسينات للشاشات الصغيرة جداً (أقل من 400px) */
+@media (max-width: 400px) {
+    .brand { font-size: 14px; }
+    .tf-btn { padding: 6px 12px; font-size: 12px; }
+    .ohlc-values { font-size: 10px; gap: 5px; }
+}
