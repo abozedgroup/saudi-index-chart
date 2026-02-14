@@ -5343,5 +5343,13 @@ export const weeklyData = [
     "low": 52.61,
     "close": 52.98,
     "volume": 1127152221
+  },
+  {
+    "time": "2026-02-08",
+    "open": 53.32,
+    "high": 54.13,
+    "low": 52.39,
+    "close": 53.28,
+    "volume": 1391608312
   }
 ];
