@@ -106,24 +106,23 @@ html, body {
     display: block; 
 }
 
+/* تعديل لتوزيع العناصر والسماح بالنزول لسطر جديد إذا لزم الأمر */
 .ohlc-values {
     display: flex;
     gap: 8px;
     white-space: nowrap; 
+    flex-wrap: wrap; 
 }
 
 .val { font-weight: 600; font-family: 'Roboto Mono', monospace; }
 .label { color: #888; margin-left: 2px; }
 
-/* تحسينات للشاشات الصغيرة جداً */
 @media (max-width: 450px) {
     .brand { font-size: 14px; }
     .tf-btn { padding: 6px 12px; font-size: 12px; }
-    /* السماح للقيم بالنزول لسطر جديد إذا لم تكفِ المساحة بسبب إضافة التاريخ */
     .ohlc-values { 
         font-size: 11px; 
         gap: 6px; 
-        flex-wrap: wrap; 
         white-space: normal; 
     }
 }

@@ -9,7 +9,7 @@ const chart = window.LightweightCharts.createChart(chartContainer, {
         background: { type: 'solid', color: '#ffffff' },
         textColor: '#131722',
     },
-    // إجبار المكتبة على استخدام اللغة الإنجليزية وتنسيق التاريخ المطلوب
+    // تحديد اللغة الإنجليزية وصيغة التاريخ للمحور السفلي
     localization: {
         locale: 'en-US',
         dateFormat: 'yyyy-MM-dd',
@@ -27,11 +27,11 @@ const chart = window.LightweightCharts.createChart(chartContainer, {
     },
     timeScale: {
         borderColor: '#e0e3eb',
-        timeVisible: false, // إخفاء الوقت 00:00:00
+        timeVisible: false, // إخفاء الأصفار 00:00:00
     },
     crosshair: {
         vertLine: {
-            labelVisible: false, // إبقاء التاريخ مخفي في المحور السفلي لتجنب التشويش والاعتماد على صندوق البيانات
+            labelVisible: true, // تفعيل ظهور التاريخ في المحور السفلي
         },
     },
     kineticScroll: {
@@ -56,7 +56,7 @@ volumeSeries.priceScale().applyOptions({
     scaleMargins: { top: 0.8, bottom: 0 },
 });
 
-// 3. منطق تغيير الحجم (Resize Logic)
+// 3. منطق تغيير الحجم
 const resizeObserver = new ResizeObserver(entries => {
     if (entries.length === 0 || entries[0].target !== chartContainer) { return; }
     const newRect = entries[0].contentRect;
@@ -64,9 +64,9 @@ const resizeObserver = new ResizeObserver(entries => {
 });
 resizeObserver.observe(chartContainer);
 
-// 4. وظائف تحديث البيانات والأسطورة (Legend)
+// 4. وظائف تحديث البيانات والأسطورة
 const domElements = {
-    date: document.getElementById('date-val'),
+    date: document.getElementById('date-val'), // ربط التاريخ بالمربع العلوي
     open: document.getElementById('open-val'),
     high: document.getElementById('high-val'),
     low: document.getElementById('low-val'),
@@ -79,7 +79,6 @@ function updateLegend(param, dateStr) {
     const format = (n) => n.toFixed(2);
     const formatVol = (v) => v >= 1000000 ? (v/1000000).toFixed(2)+'M' : (v >= 1000 ? (v/1000).toFixed(0)+'K' : v);
 
-    // تحديث التاريخ
     if (dateStr) {
         domElements.date.innerText = dateStr;
     }
@@ -93,14 +92,18 @@ function updateLegend(param, dateStr) {
     domElements.close.style.color = param.close >= param.open ? '#089981' : '#F23645';
 }
 
-// دالة مساعدة لتنسيق التاريخ المستخرج من المكتبة
+// دالة لمعالجة التاريخ للمربع العلوي بنفس صيغة yyyy-mm-dd
 function extractDateString(timeParam) {
     if (!timeParam) return '--';
     if (typeof timeParam === 'object') {
-        // تحويل الكائن إلى نص yyyy-mm-dd مع إضافة صفر للأرقام الفردية
         return `${timeParam.year}-${String(timeParam.month).padStart(2, '0')}-${String(timeParam.day).padStart(2, '0')}`;
     }
-    return timeParam; // إذا كان نصاً في الأصل
+    // إذا كان التاريخ عبارة عن طابع زمني (Timestamp)
+    if (typeof timeParam === 'number') {
+        const d = new Date(timeParam * 1000);
+        return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+    }
+    return timeParam;
 }
 
 function renderChart(data) {
@@ -115,15 +118,14 @@ function renderChart(data) {
     }));
     volumeSeries.setData(volData);
 
-    // تحديث الأسطورة لآخر شمعة عند التحميل
+    // عرض تاريخ وبيانات آخر شمعة عند التحميل
     const lastData = data[data.length - 1];
-    const initialDate = extractDateString(lastData.time);
-    updateLegend(lastData, initialDate);
+    updateLegend(lastData, extractDateString(lastData.time));
     
     chart.timeScale().fitContent();
 }
 
-// التفاعل باللمس/الماوس
+// التفاعل باللمس/الماوس وإرسال التاريخ للمربع العلوي
 chart.subscribeCrosshairMove((param) => {
     if (param.time) {
         const p = param.seriesData.get(mainSeries);
