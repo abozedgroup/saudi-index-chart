@@ -11,7 +11,7 @@ const chart = window.LightweightCharts.createChart(chartContainer, {
         textColor: '#131722',
     },
     grid: {
-        vertLines: { visible: false }, // إخفاء الخطوط العمودية لتقليل التشويش
+        vertLines: { visible: true }, // إخفاء الخطوط العمودية لتقليل التشويش
         horzLines: { color: '#f0f3fa' },
     },
     // إخفاء مقياس السعر والوقت قليلاً لتوفير مساحة في الجوال
@@ -28,7 +28,7 @@ const chart = window.LightweightCharts.createChart(chartContainer, {
     },
     crosshair: {
         vertLine: {
-            labelVisible: false, // إخفاء التاريخ عند التحرك بالإصبع لرؤية أوضح
+            labelVisible: true, // إخفاء التاريخ عند التحرك بالإصبع لرؤية أوضح
         },
     },
     // تفعيل التمرير السلس
